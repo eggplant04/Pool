@@ -32,7 +32,10 @@ void Box::Draw(float alpha)
 
 bool Box::IsInside(glm::vec2 point)
 {
-	return 0; // TODO box IsInside.
+	float boxSpacePositionX = glm::dot(point - m_position, m_localX);
+	float boxSpacePositionY = glm::dot(point - m_position, m_localY);
+
+	return boxSpacePositionX >= glm::abs(m_extents.x) && boxSpacePositionY >= glm::abs(m_extents.y); 
 }
 
 // check if any of the other box's corners are inside this box
