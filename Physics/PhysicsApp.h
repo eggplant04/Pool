@@ -16,6 +16,8 @@ public:
 	virtual void update(float deltaTime);
 	virtual void draw();
 
+	void OnBall2Check(PhysicsObject* other);
+
 	glm::vec2 ScreenToWorld(glm::vec2 screenPos);
 
 protected:
@@ -24,6 +26,6 @@ protected:
 	aie::Texture* m_poolTable;
 	PhysicsScene* m_physicsScene;
 
-	float m_cameraX;
-	float m_cameraY;
+	const float m_extents = 100;
+	const float m_aspectRatio = 16.0f / 9.0f;
 };

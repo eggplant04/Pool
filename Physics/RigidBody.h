@@ -1,5 +1,6 @@
 #pragma once
 #include "PhysicsObject.h"
+#include <functional>
 
 class RigidBody : public PhysicsObject 
 {
@@ -12,6 +13,8 @@ public:
     void ApplyForce(glm::vec2 force, glm::vec2 position);
     void ApplyForce(glm::vec2 force);
     
+    std::function<void(PhysicsObject*)> collisionCallback;
+
     void ResolveCollision(RigidBody* actor2, glm::vec2 contact,
         glm::vec2* collisionNormal=nullptr, float pen=0);
 

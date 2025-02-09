@@ -92,6 +92,11 @@ void RigidBody::ResolveCollision(RigidBody* actor2, glm::vec2 contact,
 		//apply equal and opposite forces
 		ApplyForce(-force, contact - m_position);
 		actor2->ApplyForce(force, contact - actor2->m_position);
+
+		if (collisionCallback != nullptr)
+			collisionCallback(actor2);
+		if (actor2->collisionCallback != nullptr)
+			actor2->collisionCallback(this);
 	}
 	if (pen > 0)
 	{

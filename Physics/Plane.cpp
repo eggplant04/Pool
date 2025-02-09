@@ -46,6 +46,11 @@ float Plane::GetEnergy()
     return 0.0f;
 }
 
+bool Plane::IsInside(glm::vec2 worldPos)
+{
+	return false;
+}
+
 void Plane::ResolveCollision(RigidBody* actor2, glm::vec2 contact)
 {
 	// the position at which we'll apply the force relative to the object's COM
@@ -71,6 +76,9 @@ void Plane::ResolveCollision(RigidBody* actor2, glm::vec2 contact)
 	glm::vec2 force = m_normal * j;
 
 	actor2->ApplyForce(force, contact - actor2->GetPosition());
+
+	if (actor2->collisionCallback != nullptr)
+		actor2->collisionCallback(this);
 
 	float pen = glm::dot(contact, m_normal) - m_distanceToOrigin;
 

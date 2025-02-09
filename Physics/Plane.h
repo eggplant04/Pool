@@ -12,6 +12,8 @@ public:
     virtual void Draw(float alpha);
     virtual void ResetPosition();
     virtual float GetEnergy();
+    virtual bool IsInside(glm::vec2 worldPos) override;
+
     void ResolveCollision(RigidBody* actor2, glm::vec2 contact);
 
     glm::vec2 GetNormal() { return m_normal; }

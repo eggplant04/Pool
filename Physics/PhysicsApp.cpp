@@ -287,8 +287,30 @@ bool PhysicsApp::startup() {
 	*/
 	#pragma endregion
 
+	m_physicsScene->SetGravity(glm::vec2(0, -9.82f));
 	
+	Circle* ball1 = new Circle(glm::vec2(-20, 0), glm::vec2(0), 4.0f, 4, glm::vec4(1, 0, 0, 1));
+	Circle* ball2 = new Circle(glm::vec2(10, -20), glm::vec2(0), 4.0f, 4, glm::vec4(0, 1, 0, 1));
+	ball2->SetKinematic(false);
+	
+	m_physicsScene->AddActor(ball1);
+	m_physicsScene->AddActor(ball2);
+	m_physicsScene->AddActor(new Plane(glm::vec2(0, 1), -30));
+	m_physicsScene->AddActor(new Plane(glm::vec2(1, 0), -50));
+	m_physicsScene->AddActor(new Plane(glm::vec2(-1, 0), -50));
+	m_physicsScene->AddActor(new Box(glm::vec2(20, 10), glm::vec2(3, 0), 0.5f, glm::vec2({ 4, 8 }), 4.f, glm::vec4(1, 1, 0, 1)));
+	m_physicsScene->AddActor(new Box(glm::vec2(-40, 10), glm::vec2(10, 0), 30.f, glm::vec2({ 4, 8 }), 4.f, glm::vec4(1, 0, 2, 1)));
+	
+	ball1->collisionCallback = [=](PhysicsObject* other) 
+		{
+		if (other == ball2)
+		{
+			std::cout << "Howzat!!?" << std::endl;
+		}
+		return;
+	};
 
+	ball2->collisionCallback = std::bind(&PhysicsApp::OnBall2Check, this, std::placeholders::_1);
 	return true;
 }
 
@@ -350,7 +372,7 @@ void PhysicsApp::draw() {
 	clearScreen();
 	setBackgroundColour(0.3, 0.5, 0.3);
 	
-	//m_2dRenderer->setCameraPos(m_cameraX, m_cameraY);
+	m_2dRenderer->setCameraPos(0, 0);
 
 	// begin drawing sprites
 	m_2dRenderer->begin();
@@ -366,10 +388,16 @@ void PhysicsApp::draw() {
 	m_2dRenderer->drawText(m_font, "FPS: ", 15, 30);
 	m_2dRenderer->drawText(m_font, fpsString.c_str(), 100, 30);
 
-	static float aspectRatio = 16.f / 9.f;
 	aie::Gizmos::draw2D(glm::ortho<float>(-m_extents, m_extents, -m_extents / m_aspectRatio, m_extents / m_aspectRatio, -1.0f, 1.0f));
 
 	m_2dRenderer->end();
+}
+
+void PhysicsApp::OnBall2Check(PhysicsObject* other)
+{
+	Plane* plane = dynamic_cast<Plane*>(other);
+	if (plane != nullptr)
+		std::cout << "Pong!" << std::endl;
 }
 
 glm::vec2 PhysicsApp::ScreenToWorld(glm::vec2 screenPos)
