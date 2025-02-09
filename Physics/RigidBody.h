@@ -1,6 +1,7 @@
 #pragma once
 #include "PhysicsObject.h"
 #include <functional>
+#include <list>
 
 class RigidBody : public PhysicsObject 
 {
@@ -14,6 +15,8 @@ public:
     void ApplyForce(glm::vec2 force);
     
     std::function<void(PhysicsObject*)> collisionCallback;
+    std::function<void(PhysicsObject*)> triggerEnter;
+    std::function<void(PhysicsObject*)> triggerExit;
 
     void ResolveCollision(RigidBody* actor2, glm::vec2 contact,
         glm::vec2* collisionNormal=nullptr, float pen=0);
@@ -23,6 +26,8 @@ public:
     void CalculateAxes();
 
     glm::vec2 ToWorld(glm::vec2 position, float alpha);
+
+    void TriggerEnter(PhysicsObject* actor2);
 
     // gets and sets
     float GetKineticEnergy();
@@ -55,6 +60,9 @@ public:
     void SetKinematic(bool state) { m_isKinematic = state; }
     bool IsKinematic() { return m_isKinematic; }
 
+    void SetTrigger(bool state) { m_isTrigger = state; }
+    bool IsTrigger() { return m_isTrigger; }
+
 protected:
     glm::vec2 m_position;
     glm::vec2 m_lastPosition;
@@ -77,5 +85,9 @@ protected:
     float m_angularDrag; // Between 0 and 1
 
     bool m_isKinematic;
+
+    bool m_isTrigger;
+    std::list<PhysicsObject*> m_objectsInside;
+    std::list<PhysicsObject*> m_objectsInsideThisFrame;
 };
 

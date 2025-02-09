@@ -291,7 +291,8 @@ bool PhysicsApp::startup() {
 	
 	Circle* ball1 = new Circle(glm::vec2(-20, 0), glm::vec2(0), 4.0f, 4, glm::vec4(1, 0, 0, 1));
 	Circle* ball2 = new Circle(glm::vec2(10, -20), glm::vec2(0), 4.0f, 4, glm::vec4(0, 1, 0, 1));
-	ball2->SetKinematic(false);
+	ball2->SetKinematic(true);
+	ball2->SetTrigger(true);
 	
 	m_physicsScene->AddActor(ball1);
 	m_physicsScene->AddActor(ball2);
@@ -301,16 +302,20 @@ bool PhysicsApp::startup() {
 	m_physicsScene->AddActor(new Box(glm::vec2(20, 10), glm::vec2(3, 0), 0.5f, glm::vec2({ 4, 8 }), 4.f, glm::vec4(1, 1, 0, 1)));
 	m_physicsScene->AddActor(new Box(glm::vec2(-40, 10), glm::vec2(10, 0), 30.f, glm::vec2({ 4, 8 }), 4.f, glm::vec4(1, 0, 2, 1)));
 	
-	ball1->collisionCallback = [=](PhysicsObject* other) 
-		{
-		if (other == ball2)
-		{
-			std::cout << "Howzat!!?" << std::endl;
-		}
-		return;
-	};
+	//ball1->collisionCallback = [=](PhysicsObject* other) 
+	//	{
+	//	if (other == ball2)
+	//	{
+	//		std::cout << "Howzat!!?" << std::endl;
+	//	}
+	//	return;
+	//};
+	//
+	//ball2->collisionCallback = std::bind(&PhysicsApp::OnBall2Check, this, std::placeholders::_1);
 
-	ball2->collisionCallback = std::bind(&PhysicsApp::OnBall2Check, this, std::placeholders::_1);
+	ball2->triggerEnter = [=](PhysicsObject* other) { std::cout << "Enter:" << other << std::endl; };
+	ball2->triggerExit = [=](PhysicsObject* other) { std::cout << "Exit:" << other << std::endl; };
+
 	return true;
 }
 
