@@ -2,7 +2,7 @@
 #include "PhysicsScene.h"
 #include <iostream>
 
-constexpr float MIN_LINEAR_THRESHOLD = 0.0f;
+constexpr float MIN_LINEAR_THRESHOLD = 0.05f;
 constexpr float MIN_ANGULAR_THRESHOLD = 0.01f;
 
 RigidBody::RigidBody(ShapeType shapeID, glm::vec2 position, glm::vec2 velocity, float orientation, float mass)
@@ -11,7 +11,7 @@ RigidBody::RigidBody(ShapeType shapeID, glm::vec2 position, glm::vec2 velocity, 
 	m_isKinematic{ false }, m_isTrigger{ false }
 {
 	m_angularDrag = 0.7f;
-	m_linearDrag = 0.0;
+	m_linearDrag = 0.7;
 }
 
 RigidBody::~RigidBody()

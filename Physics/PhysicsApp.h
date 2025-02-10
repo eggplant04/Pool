@@ -3,6 +3,7 @@
 #include "Application.h"
 #include "Renderer2D.h"
 #include "PhysicsScene.h"
+#include "CueBall.h"
 
 class PhysicsApp : public aie::Application {
 public:
@@ -25,6 +26,8 @@ protected:
 	aie::Font* m_font;
 	aie::Texture* m_poolTable;
 	PhysicsScene* m_physicsScene;
+
+	CueBall* m_cueBall;
 
 	const float m_extents = 100;
 	const float m_aspectRatio = 16.0f / 9.0f;
