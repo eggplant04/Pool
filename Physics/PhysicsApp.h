@@ -4,10 +4,10 @@
 #include "Renderer2D.h"
 #include "PhysicsScene.h"
 #include "CueBall.h"
+#include "Hole.h"
 
 class PhysicsApp : public aie::Application {
 public:
-
 	PhysicsApp();
 	virtual ~PhysicsApp();
 
@@ -17,7 +17,7 @@ public:
 	virtual void update(float deltaTime);
 	virtual void draw();
 
-	void OnBall2Check(PhysicsObject* other);
+	void Pocket(PhysicsObject* other);
 
 	glm::vec2 ScreenToWorld(glm::vec2 screenPos);
 
@@ -31,4 +31,5 @@ protected:
 
 	const float m_extents = 100;
 	const float m_aspectRatio = 16.0f / 9.0f;
+
 };

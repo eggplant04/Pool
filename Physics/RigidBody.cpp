@@ -2,13 +2,13 @@
 #include "PhysicsScene.h"
 #include <iostream>
 
-constexpr float MIN_LINEAR_THRESHOLD = 0.05f;
+constexpr float MIN_LINEAR_THRESHOLD = 0.1f;
 constexpr float MIN_ANGULAR_THRESHOLD = 0.01f;
 
 RigidBody::RigidBody(ShapeType shapeID, glm::vec2 position, glm::vec2 velocity, float orientation, float mass)
 	: PhysicsObject(shapeID), m_position{ position }, m_velocity{ velocity }, m_mass{ mass }, 
 	m_orientation{ orientation }, m_angularVelocity{ 0 }, m_lastOrientation{ 0 }, m_moment{ 0 }, 
-	m_isKinematic{ false }, m_isTrigger{ false }
+	m_isKinematic{ false }, m_isTrigger{ false }, m_dead{ false }
 {
 	m_angularDrag = 0.7f;
 	m_linearDrag = 0.7;
@@ -20,7 +20,6 @@ RigidBody::~RigidBody()
 
 void RigidBody::FixedUpdate(glm::vec2 gravity, float timeStep)
 {
-
 	CalculateAxes();
 
 	// trigger checks

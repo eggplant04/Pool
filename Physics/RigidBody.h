@@ -63,6 +63,9 @@ public:
     void SetTrigger(bool state) { m_isTrigger = state; }
     bool IsTrigger() { return m_isTrigger; }
 
+    bool IsDead() { return m_dead; }
+    void KillBall() { m_dead = true; }
+
 protected:
     glm::vec2 m_position;
     glm::vec2 m_lastPosition;
@@ -89,5 +92,7 @@ protected:
     bool m_isTrigger;
     std::list<PhysicsObject*> m_objectsInside;
     std::list<PhysicsObject*> m_objectsInsideThisFrame;
+
+    bool m_dead;
 };
 

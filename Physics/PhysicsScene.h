@@ -8,6 +8,16 @@ class PhysicsObject;
 class PhysicsScene
 {
 public:
+    int redsPotted = 0;
+    int yellowsPotted = 0;
+    bool foul = false;
+    bool potted = false;
+    bool canSwitch = false;
+    int activePlayer = 1;
+    int p1OnRed = 2;
+    bool groupsAssigned = false;
+
+public:
     PhysicsScene();
     ~PhysicsScene();
 
@@ -27,6 +37,8 @@ public:
     float GetTimeStep() const { return m_timeStep; }
 
     float GetTotalEnergy();
+
+    std::vector<PhysicsObject*> GetActors() { return m_actors; }
 
     static bool Plane2Plane(PhysicsObject* obj1, PhysicsObject* obj2);
     static bool Plane2Circle(PhysicsObject* obj1, PhysicsObject* obj2);

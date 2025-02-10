@@ -3,7 +3,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
-Circle::Circle(glm::vec2 position, glm::vec2 velocity, float mass, float radius, glm::vec4 color) 
+Circle::Circle(glm::vec2 position, glm::vec2 velocity, float mass, float radius, glm::vec4 color)
     : RigidBody(CIRCLE, position, velocity, 0, mass)
 {
     m_radius = radius;

@@ -29,8 +29,10 @@ PhysicsApp::~PhysicsApp() {
 
 }
 
-bool PhysicsApp::startup() {
-	
+bool PhysicsApp::startup() 
+{
+
+
 	m_2dRenderer = new aie::Renderer2D();
 	// increase the 2d line count to maximize the number of objects we can draw
 	aie::Gizmos::create(255U, 255U, 65535U, 65535U);
@@ -323,7 +325,7 @@ bool PhysicsApp::startup() {
 	m_physicsScene->SetGravity(glm::vec2(0));
 	
 	// Cue ball
-	m_cueBall = new CueBall(glm::vec2(-50, 0), glm::vec2(0, 0), 16.0f, 4, glm::vec4(0.8, 0.8, 0.8, 1));
+	m_cueBall = new CueBall(glm::vec2(-50, 0), glm::vec2(0, 0), 18.0f, 4, glm::vec4(0.8, 0.8, 0.8, 1));
 	m_physicsScene->AddActor(m_cueBall);
 	
 	// Billard balls
@@ -376,24 +378,12 @@ bool PhysicsApp::startup() {
 	m_physicsScene->AddActor(cushion4);
 
 	// Holes
-	Circle* hole1 = new Circle(glm::vec2(0, -44), glm::vec2(0), 17.0f, 5, glm::vec4(0, 0, 0, 1));
-	hole1->SetKinematic(true);
-	hole1->SetTrigger(true);
-	Circle* hole2 = new Circle(glm::vec2(88, -44), glm::vec2(0), 17.0f, 5, glm::vec4(0, 0, 0, 1));
-	hole2->SetKinematic(true);
-	hole2->SetTrigger(true);
-	Circle* hole3 = new Circle(glm::vec2(-88, -44), glm::vec2(0), 17.0f, 5, glm::vec4(0, 0, 0, 1));
-	hole3->SetKinematic(true);
-	hole3->SetTrigger(true);
-	Circle* hole4 = new Circle(glm::vec2(0, 44), glm::vec2(0), 17.0f, 5, glm::vec4(0, 0, 0, 1));
-	hole4->SetKinematic(true);
-	hole4->SetTrigger(true);
-	Circle* hole5 = new Circle(glm::vec2(88, 44), glm::vec2(0), 17.0f, 5, glm::vec4(0, 0, 0, 1));
-	hole5->SetKinematic(true);
-	hole5->SetTrigger(true);
-	Circle* hole6 = new Circle(glm::vec2(-88, 44), glm::vec2(0), 17.0f, 5, glm::vec4(0, 0, 0, 1));
-	hole6->SetKinematic(true);
-	hole6->SetTrigger(true);
+	Hole* hole1 = new Hole(glm::vec2(0, -44), glm::vec2(0), 17.0f, 5, glm::vec4(0, 0, 0, 1));
+	Hole* hole2 = new Hole(glm::vec2(88, -44), glm::vec2(0), 17.0f, 5, glm::vec4(0, 0, 0, 1));
+	Hole* hole3 = new Hole(glm::vec2(-88, -44), glm::vec2(0), 17.0f, 5, glm::vec4(0, 0, 0, 1));
+	Hole* hole4 = new Hole(glm::vec2(0, 44), glm::vec2(0), 17.0f, 5, glm::vec4(0, 0, 0, 1));
+	Hole* hole5 = new Hole(glm::vec2(88, 44), glm::vec2(0), 17.0f, 5, glm::vec4(0, 0, 0, 1));
+	Hole* hole6 = new Hole(glm::vec2(-88, 44), glm::vec2(0), 17.0f, 5, glm::vec4(0, 0, 0, 1));
 
 	m_physicsScene->AddActor(hole1);
 	m_physicsScene->AddActor(hole2);
@@ -401,6 +391,17 @@ bool PhysicsApp::startup() {
 	m_physicsScene->AddActor(hole4);
 	m_physicsScene->AddActor(hole5);
 	m_physicsScene->AddActor(hole6);
+
+	for (PhysicsObject* object : m_physicsScene->GetActors())
+	{
+		Hole* hole = dynamic_cast<Hole*>(object);
+
+		if (hole)
+		{
+			hole->triggerEnter = std::bind(&PhysicsApp::Pocket, this, std::placeholders::_1);
+		}
+	}
+	
 
 	return true;
 }
@@ -420,18 +421,36 @@ void PhysicsApp::update(float deltaTime)
 	
 	m_physicsScene->Update(deltaTime);
 	
-	if (input->isMouseButtonDown(0))
-	{
-		int xScreen, yScreen;
-		input->getMouseXY(&xScreen, &yScreen);
-		glm::vec2 worldPos = ScreenToWorld(glm::vec2(xScreen, yScreen));
-
-		aie::Gizmos::add2DCircle(worldPos, 5, 32, glm::vec4(0, 0, 1, 1));
-	}
+	//if (input->isMouseButtonDown(0))
+	//{
+	//	int xScreen, yScreen;
+	//	input->getMouseXY(&xScreen, &yScreen);
+	//	glm::vec2 worldPos = ScreenToWorld(glm::vec2(xScreen, yScreen));
+	//
+	//	aie::Gizmos::add2DCircle(worldPos, 5, 32, glm::vec4(0, 0, 1, 1));
+	//}
 
 	// shoot ball
-	if (input->isKeyDown(aie::INPUT_KEY_SPACE) && m_cueBall->GetVelocity() == glm::vec2(0))
-		m_cueBall->ApplyForce(glm::vec2(cos(m_cueBall->GetOrientatation()) * 5000, sin(m_cueBall->GetOrientatation()) * 5000));
+	if (input->isKeyDown(aie::INPUT_KEY_SPACE) && m_physicsScene->GetTotalEnergy() == 0.f)
+	{
+		m_physicsScene->canSwitch = true;
+		m_cueBall->ApplyForce(glm::vec2(cos(m_cueBall->GetOrientatation()) * 2000, sin(m_cueBall->GetOrientatation()) * 2000));
+	}
+
+	if (m_physicsScene->GetTotalEnergy() == 0.f)
+	{
+		if (m_physicsScene->canSwitch && !m_physicsScene->potted)
+		{
+			if (m_physicsScene->activePlayer == 1)
+				m_physicsScene->activePlayer = 2;
+			else
+				m_physicsScene->activePlayer = 1;
+		}
+		
+		m_physicsScene->canSwitch = false;
+		m_physicsScene->potted = false;
+	}
+
 	
 	// aim left
 	if (input->isKeyDown(aie::INPUT_KEY_LEFT) || input->isKeyDown(aie::INPUT_KEY_A))
@@ -459,21 +478,57 @@ void PhysicsApp::draw() {
 
 	m_physicsScene->Draw();
 	
+	// output Active Player
+	if (m_physicsScene->canSwitch)
+	{
+		m_2dRenderer->drawText(m_font, "Waiting...", 100, 680);
+	}
+	else if (m_physicsScene->activePlayer == 1)
+	{
+		m_2dRenderer->drawText(m_font, "Player 1's Turn", 100, 680);
+		
+		if (m_physicsScene->p1OnRed == 1)
+			m_2dRenderer->drawText(m_font, "RED", 400, 680);
+		
+		else if (m_physicsScene->p1OnRed == 0)
+			m_2dRenderer->drawText(m_font, "YELLOW", 400, 680);
+
+		else if (m_physicsScene->p1OnRed == 2)
+			m_2dRenderer->drawText(m_font, "ANY COLOR", 400, 680);
+	}
+	else if (m_physicsScene->activePlayer == 2)
+	{
+		m_2dRenderer->drawText(m_font, "Player 2's Turn", 100, 680);
+
+		if (m_physicsScene->p1OnRed == 1)
+			m_2dRenderer->drawText(m_font, "YELLOW", 400, 680);
+
+		else if (m_physicsScene->p1OnRed == 0)
+			m_2dRenderer->drawText(m_font, "RED", 400, 680);
+
+		else if (m_physicsScene->p1OnRed == 2)
+			m_2dRenderer->drawText(m_font, "ANY COLOR", 400, 680);
+	}
+		
+
 	// output fps 
 	std::string fpsString = std::to_string(getFPS());
-	m_2dRenderer->drawText(m_font, "FPS: ", 15, 30);
-	m_2dRenderer->drawText(m_font, fpsString.c_str(), 100, 30);
+	m_2dRenderer->drawText(m_font, "FPS: ", 100, 30);
+	m_2dRenderer->drawText(m_font, fpsString.c_str(), 185, 30);
 
 	aie::Gizmos::draw2D(glm::ortho<float>(-m_extents, m_extents, -m_extents / m_aspectRatio, m_extents / m_aspectRatio, -1.0f, 1.0f));
 
 	m_2dRenderer->end();
 }
 
-void PhysicsApp::OnBall2Check(PhysicsObject* other)
+void PhysicsApp::Pocket(PhysicsObject* other)
 {
-	Plane* plane = dynamic_cast<Plane*>(other);
-	if (plane != nullptr)
-		std::cout << "Pong!" << std::endl;
+	Circle* ball = dynamic_cast<Circle*>(other);
+	if (ball != nullptr)
+	{
+		ball->KillBall();
+	}
+		
 }
 
 glm::vec2 PhysicsApp::ScreenToWorld(glm::vec2 screenPos)

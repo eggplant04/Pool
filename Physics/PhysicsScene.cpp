@@ -49,6 +49,9 @@ void PhysicsScene::Update(float dt)
         }
         accumulatedTime -= m_timeStep;
 
+        // pool rules
+
+
         // check for collisions (ideally you'd want to have some sort of 
         // scene management in place)
         CheckForCollision();
@@ -82,12 +85,54 @@ void PhysicsScene::ApplyContactForces(RigidBody* body1, RigidBody* body2, glm::v
 
 void PhysicsScene::CheckForCollision()
 {
-    int actorCount = m_actors.size();
+    for (int i = 0; i < m_actors.size() - 1; i++)
+    {
+        Circle* ball = dynamic_cast<Circle*>(m_actors[i]);
+
+        if (ball && ball->IsDead())
+        {
+            if (ball->GetColor() == glm::vec4(1, 0, 0, 1)) // if ball is red
+            {
+                if ((p1OnRed && activePlayer == 1) || (!p1OnRed && activePlayer == 2) || !groupsAssigned)
+                {
+                    potted = true;
+                    if (!groupsAssigned)
+                    {
+                        groupsAssigned = true;
+
+                        if (activePlayer == 1)
+                            p1OnRed = true;
+                        else
+                            p1OnRed = false;
+                    }
+                }
+            }
+            if (ball->GetColor() == glm::vec4(1, 1, 0, 1)) // if ball is yellow
+            {
+                if ((!p1OnRed && activePlayer == 1) || (p1OnRed && activePlayer == 2) || !groupsAssigned)
+                {
+                    potted = true;
+                    if (!groupsAssigned)
+                    {
+                        groupsAssigned = true;
+
+                        if (activePlayer == 1)
+                            p1OnRed = false;
+                        else
+                            p1OnRed = true;
+                    }
+                }
+            }
+            
+            delete ball;
+            m_actors.erase(m_actors.begin() + i);
+        }
+    }
 
     // need to check for collisions against all objects except this one.
-    for (int outer = 0; outer < actorCount - 1; outer++)
+    for (int outer = 0; outer < m_actors.size() - 1; outer++)
     {
-        for (int inner = outer + 1; inner < actorCount; inner++)
+        for (int inner = outer + 1; inner < m_actors.size(); inner++)
         {
             PhysicsObject* object1 = m_actors[outer];
             PhysicsObject* object2 = m_actors[inner];
@@ -108,6 +153,7 @@ void PhysicsScene::CheckForCollision()
             }
         }
     }
+
 }
 
 float PhysicsScene::GetTotalEnergy()
