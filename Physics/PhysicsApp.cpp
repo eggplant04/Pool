@@ -421,14 +421,30 @@ void PhysicsApp::update(float deltaTime)
 	
 	m_physicsScene->Update(deltaTime);
 	
-	//if (input->isMouseButtonDown(0))
-	//{
-	//	int xScreen, yScreen;
-	//	input->getMouseXY(&xScreen, &yScreen);
-	//	glm::vec2 worldPos = ScreenToWorld(glm::vec2(xScreen, yScreen));
-	//
-	//	aie::Gizmos::add2DCircle(worldPos, 5, 32, glm::vec4(0, 0, 1, 1));
-	//}
+	if (input->isMouseButtonDown(0))
+	{
+		m_cueBall->SetCanBeHit(true);
+		int xScreen, yScreen;
+		input->getMouseXY(&xScreen, &yScreen);
+		glm::vec2 worldPos = ScreenToWorld(glm::vec2(xScreen, yScreen));
+		float dist = glm::distance(m_cueBall->GetPosition(), worldPos);
+		glm::vec2 forceDir = m_cueBall->GetPosition() - worldPos; // Direction from mouse to ball
+		if (glm::length(forceDir) > 0) {
+			forceDir = glm::normalize(forceDir);
+		}
+
+		
+		float forceMagnitude = 100.f;
+		m_cueForce = forceDir * dist;
+
+		aie::Gizmos::add2DLine(glm::vec2(worldPos), m_cueBall->GetPosition(), glm::vec4(1, 0, 0, 1));
+	}
+	if (input->isMouseButtonUp(0) && m_cueBall->GetCanBeHit())
+	{
+		m_cueBall->SetCanBeHit(false);
+		m_cueBall->ApplyForce(m_cueForce * 100.f);
+	}
+	
 
 	// shoot ball
 	if (input->isKeyDown(aie::INPUT_KEY_SPACE) && m_physicsScene->GetTotalEnergy() == 0.f)

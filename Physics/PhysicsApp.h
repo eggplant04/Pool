@@ -28,6 +28,7 @@ protected:
 	PhysicsScene* m_physicsScene;
 
 	CueBall* m_cueBall;
+	glm::vec2 m_cueForce = glm::vec2(0);
 
 	const float m_extents = 100;
 	const float m_aspectRatio = 16.0f / 9.0f;
