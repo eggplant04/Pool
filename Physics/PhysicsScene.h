@@ -15,7 +15,6 @@ public:
     bool needsRespawn = false;
     int redsPotted = 0;
     int yellowsPotted = 0;
-    bool foul = false;
     bool potted = false;
     bool canSwitch = false;
     int activePlayer = 1;

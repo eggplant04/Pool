@@ -108,6 +108,8 @@ void PhysicsScene::CheckForRules()
                             p1OnRed = false;
                     }
                 }
+                delete ball;
+                m_actors.erase(m_actors.begin() + i);
             }
             if (ball->GetColor() == glm::vec4(1, 1, 0, 1)) // if ball is yellow
             {
@@ -125,6 +127,8 @@ void PhysicsScene::CheckForRules()
                             p1OnRed = true;
                     }
                 }
+                delete ball;
+                m_actors.erase(m_actors.begin() + i);
             }
             if (ball->GetColor() == glm::vec4(1)) // if cue ball
             {
@@ -133,10 +137,6 @@ void PhysicsScene::CheckForRules()
             if (ball->GetColor() == glm::vec4(0, 0, 0, 1)) // if 8 ball
             {
                 eightBallPotted = true;
-            }
-
-            if (!needsRespawn)
-            {
                 delete ball;
                 m_actors.erase(m_actors.begin() + i);
             }
