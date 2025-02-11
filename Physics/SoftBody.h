@@ -5,7 +5,6 @@
 #include "Circle.h"
 #include "Spring.h"
 #include <glm/glm.hpp>
-#include "Box.h"
 
 class SoftBody
 {

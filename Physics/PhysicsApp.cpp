@@ -133,6 +133,7 @@ void PhysicsApp::shutdown()
 {
 	delete m_font;
 	delete m_2dRenderer;
+	delete m_physicsScene;
 }
 
 void PhysicsApp::update(float deltaTime) 
