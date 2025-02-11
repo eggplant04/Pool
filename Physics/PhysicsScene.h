@@ -2,12 +2,17 @@
 #include "glm/vec2.hpp"
 #include "vector"
 #include "RigidBody.h"
+#include <iostream>
 
 class PhysicsObject;
 
 class PhysicsScene
 {
 public:
+    bool eightBallPotted = false;
+    std::string winnerStr = "TEXT";
+
+    bool needsRespawn = false;
     int redsPotted = 0;
     int yellowsPotted = 0;
     bool foul = false;
@@ -28,6 +33,7 @@ public:
     void debugScene();
     static void ApplyContactForces(RigidBody* body1, RigidBody* body2, glm::vec2 norm, float pen);
     
+    void CheckForRules();
     void CheckForCollision();
 
     void SetGravity(const glm::vec2 gravity) { m_gravity = gravity; }

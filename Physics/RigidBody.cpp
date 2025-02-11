@@ -2,7 +2,7 @@
 #include "PhysicsScene.h"
 #include <iostream>
 
-constexpr float MIN_LINEAR_THRESHOLD = 0.1f;
+constexpr float MIN_LINEAR_THRESHOLD = 0.8f;
 constexpr float MIN_ANGULAR_THRESHOLD = 0.01f;
 
 RigidBody::RigidBody(ShapeType shapeID, glm::vec2 position, glm::vec2 velocity, float orientation, float mass)

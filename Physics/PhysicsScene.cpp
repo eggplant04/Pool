@@ -50,7 +50,7 @@ void PhysicsScene::Update(float dt)
         accumulatedTime -= m_timeStep;
 
         // pool rules
-
+        CheckForRules();
 
         // check for collisions (ideally you'd want to have some sort of 
         // scene management in place)
@@ -83,16 +83,18 @@ void PhysicsScene::ApplyContactForces(RigidBody* body1, RigidBody* body2, glm::v
         body2->SetPosition(body2->GetPosition() + (1 - body1Factor) * norm * pen);
 }
 
-void PhysicsScene::CheckForCollision()
+void PhysicsScene::CheckForRules()
 {
     for (int i = 0; i < m_actors.size() - 1; i++)
     {
         Circle* ball = dynamic_cast<Circle*>(m_actors[i]);
 
+        // When a Ball is Potted
         if (ball && ball->IsDead())
         {
             if (ball->GetColor() == glm::vec4(1, 0, 0, 1)) // if ball is red
             {
+                redsPotted += 1;
                 if ((p1OnRed && activePlayer == 1) || (!p1OnRed && activePlayer == 2) || !groupsAssigned)
                 {
                     potted = true;
@@ -109,6 +111,7 @@ void PhysicsScene::CheckForCollision()
             }
             if (ball->GetColor() == glm::vec4(1, 1, 0, 1)) // if ball is yellow
             {
+                yellowsPotted += 1;
                 if ((!p1OnRed && activePlayer == 1) || (p1OnRed && activePlayer == 2) || !groupsAssigned)
                 {
                     potted = true;
@@ -123,12 +126,26 @@ void PhysicsScene::CheckForCollision()
                     }
                 }
             }
-            
-            delete ball;
-            m_actors.erase(m_actors.begin() + i);
+            if (ball->GetColor() == glm::vec4(1)) // if cue ball
+            {
+                needsRespawn = true;
+            }
+            if (ball->GetColor() == glm::vec4(0, 0, 0, 1)) // if 8 ball
+            {
+                eightBallPotted = true;
+            }
+
+            if (!needsRespawn)
+            {
+                delete ball;
+                m_actors.erase(m_actors.begin() + i);
+            }
         }
     }
+}
 
+void PhysicsScene::CheckForCollision()
+{
     // need to check for collisions against all objects except this one.
     for (int outer = 0; outer < m_actors.size() - 1; outer++)
     {

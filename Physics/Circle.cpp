@@ -28,8 +28,6 @@ void Circle::Draw(float alpha)
     CalculateSmoothedPosition(alpha);
 
     aie::Gizmos::add2DCircle(m_smoothedPosition, m_radius, 30, m_color);
-
-    aie::Gizmos::add2DLine(m_smoothedPosition, m_smoothedPosition + m_smoothedLocalX * m_radius, glm::vec4(1, 1, 1, 1));
 }
 
 bool Circle::IsInside(glm::vec2 point)

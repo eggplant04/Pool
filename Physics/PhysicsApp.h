@@ -15,6 +15,8 @@ public:
 	virtual void shutdown();
 
 	virtual void update(float deltaTime);
+	void UpdatePoolRules();
+
 	virtual void draw();
 
 	void Pocket(PhysicsObject* other);

@@ -325,7 +325,7 @@ bool PhysicsApp::startup()
 	m_physicsScene->SetGravity(glm::vec2(0));
 	
 	// Cue ball
-	m_cueBall = new CueBall(glm::vec2(-50, 0), glm::vec2(0, 0), 18.0f, 4, glm::vec4(0.8, 0.8, 0.8, 1));
+	m_cueBall = new CueBall(glm::vec2(-50, 0), glm::vec2(0, 0), 18.0f, 4, glm::vec4(1));
 	m_physicsScene->AddActor(m_cueBall);
 	
 	// Billard balls
@@ -414,43 +414,90 @@ void PhysicsApp::shutdown()
 
 void PhysicsApp::update(float deltaTime) 
 {
-	// input example
-	aie::Input* input = aie::Input::getInstance();
-
 	aie::Gizmos::clear();
 	
 	m_physicsScene->Update(deltaTime);
 	
-	if (input->isMouseButtonDown(0))
+	UpdatePoolRules();
+}
+
+void PhysicsApp::UpdatePoolRules()
+{
+	// input example
+	aie::Input* input = aie::Input::getInstance();
+
+	if (input->isMouseButtonDown(0) && m_physicsScene->GetTotalEnergy() == 0.f)
 	{
 		m_cueBall->SetCanBeHit(true);
+
 		int xScreen, yScreen;
 		input->getMouseXY(&xScreen, &yScreen);
+
 		glm::vec2 worldPos = ScreenToWorld(glm::vec2(xScreen, yScreen));
-		float dist = glm::distance(m_cueBall->GetPosition(), worldPos);
-		glm::vec2 forceDir = m_cueBall->GetPosition() - worldPos; // Direction from mouse to ball
-		if (glm::length(forceDir) > 0) {
-			forceDir = glm::normalize(forceDir);
+		if (m_physicsScene->needsRespawn)
+		{
+			aie::Gizmos::add2DCircle(worldPos, 5, 32, glm::vec4(0, 0, 1, 1));
 		}
+		else
+		{
+			float dist = glm::distance(m_cueBall->GetPosition(), worldPos);
 
-		
-		float forceMagnitude = 100.f;
-		m_cueForce = forceDir * dist;
+			glm::vec2 forceDir = m_cueBall->GetPosition() - worldPos; // Direction from mouse to ball
 
-		aie::Gizmos::add2DLine(glm::vec2(worldPos), m_cueBall->GetPosition(), glm::vec4(1, 0, 0, 1));
+			if (glm::length(forceDir) > 0)
+			{
+				forceDir = glm::normalize(forceDir);
+			}
+
+			float forceMagnitude = 100.f;
+			m_cueForce = forceDir * dist;
+
+			aie::Gizmos::add2DLine(glm::vec2(worldPos), m_cueBall->GetPosition(), glm::vec4(1, 0, 0, 1));
+		}
 	}
+
 	if (input->isMouseButtonUp(0) && m_cueBall->GetCanBeHit())
 	{
 		m_cueBall->SetCanBeHit(false);
-		m_cueBall->ApplyForce(m_cueForce * 100.f);
-	}
-	
 
-	// shoot ball
-	if (input->isKeyDown(aie::INPUT_KEY_SPACE) && m_physicsScene->GetTotalEnergy() == 0.f)
+		if (m_cueBall->GetPosition() == glm::vec2(1000))
+		{
+			m_physicsScene->needsRespawn = false;
+			int xScreen, yScreen;
+			input->getMouseXY(&xScreen, &yScreen);
+			glm::vec2 worldPos = ScreenToWorld(glm::vec2(xScreen, yScreen));
+
+			m_cueBall->SetPosition(worldPos);
+		}
+		else
+		{
+			m_physicsScene->canSwitch = true;
+
+			m_cueBall->ApplyForce(m_cueForce * 100.f);
+		}
+	}
+
+	// EndGame
+	if (m_physicsScene->eightBallPotted)
 	{
-		m_physicsScene->canSwitch = true;
-		m_cueBall->ApplyForce(glm::vec2(cos(m_cueBall->GetOrientatation()) * 2000, sin(m_cueBall->GetOrientatation()) * 2000));
+		if (m_physicsScene->activePlayer == 1)
+		{
+			if ((m_physicsScene->p1OnRed && m_physicsScene->redsPotted == 7) || (!m_physicsScene->p1OnRed && m_physicsScene->yellowsPotted == 7))
+			{
+				m_physicsScene->winnerStr = "Player 1 Wins";
+			}
+			else
+				m_physicsScene->winnerStr = "Player 2 Wins";
+		}
+		else
+		{
+			if ((!m_physicsScene->p1OnRed && m_physicsScene->redsPotted == 7) || (m_physicsScene->p1OnRed && m_physicsScene->yellowsPotted == 7))
+			{
+				m_physicsScene->winnerStr = "Player 2 Wins";
+			}
+			else
+				m_physicsScene->winnerStr = "Player 1 Wins";
+		}
 	}
 
 	if (m_physicsScene->GetTotalEnergy() == 0.f)
@@ -462,18 +509,18 @@ void PhysicsApp::update(float deltaTime)
 			else
 				m_physicsScene->activePlayer = 1;
 		}
-		
+
+		if (m_physicsScene->needsRespawn)
+		{
+
+			
+		}
+
 		m_physicsScene->canSwitch = false;
 		m_physicsScene->potted = false;
 	}
 
 	
-	// aim left
-	if (input->isKeyDown(aie::INPUT_KEY_LEFT) || input->isKeyDown(aie::INPUT_KEY_A))
-		m_cueBall->SetOrientation(m_cueBall->GetOrientatation() + 0.1f);
-	
-	if (input->isKeyDown(aie::INPUT_KEY_RIGHT) || input->isKeyDown(aie::INPUT_KEY_D))
-		m_cueBall->SetOrientation(m_cueBall->GetOrientatation() + -0.1f);
 }
 
 void PhysicsApp::draw() {
@@ -494,8 +541,12 @@ void PhysicsApp::draw() {
 
 	m_physicsScene->Draw();
 	
-	// output Active Player
-	if (m_physicsScene->canSwitch)
+	// OutPut Winner
+	if (m_physicsScene->eightBallPotted)
+	{
+		m_2dRenderer->drawText(m_font, m_physicsScene->winnerStr.c_str(), 100, 680);
+	}
+	else if (m_physicsScene->canSwitch)
 	{
 		m_2dRenderer->drawText(m_font, "Waiting...", 100, 680);
 	}
@@ -504,10 +555,20 @@ void PhysicsApp::draw() {
 		m_2dRenderer->drawText(m_font, "Player 1's Turn", 100, 680);
 		
 		if (m_physicsScene->p1OnRed == 1)
-			m_2dRenderer->drawText(m_font, "RED", 400, 680);
+		{
+			if (m_physicsScene->redsPotted == 7)
+				m_2dRenderer->drawText(m_font, "8 BALL", 400, 680);
+			else
+				m_2dRenderer->drawText(m_font, "RED", 400, 680);
+		}
 		
 		else if (m_physicsScene->p1OnRed == 0)
-			m_2dRenderer->drawText(m_font, "YELLOW", 400, 680);
+		{
+			if (m_physicsScene->yellowsPotted == 7)
+				m_2dRenderer->drawText(m_font, "8 BALL", 400, 680);
+			else
+				m_2dRenderer->drawText(m_font, "YELLOW", 400, 680);
+		}
 
 		else if (m_physicsScene->p1OnRed == 2)
 			m_2dRenderer->drawText(m_font, "ANY COLOR", 400, 680);
@@ -517,16 +578,27 @@ void PhysicsApp::draw() {
 		m_2dRenderer->drawText(m_font, "Player 2's Turn", 100, 680);
 
 		if (m_physicsScene->p1OnRed == 1)
-			m_2dRenderer->drawText(m_font, "YELLOW", 400, 680);
+		{
+			if (m_physicsScene->yellowsPotted == 7)
+				m_2dRenderer->drawText(m_font, "8 BALL", 400, 680);
+			else
+				m_2dRenderer->drawText(m_font, "YELLOW", 400, 680);
+		}
+			
 
 		else if (m_physicsScene->p1OnRed == 0)
-			m_2dRenderer->drawText(m_font, "RED", 400, 680);
-
+		{
+			if (m_physicsScene->redsPotted == 7)
+				m_2dRenderer->drawText(m_font, "8 BALL", 400, 680);
+			else
+				m_2dRenderer->drawText(m_font, "RED", 400, 680);
+		}
+			
 		else if (m_physicsScene->p1OnRed == 2)
 			m_2dRenderer->drawText(m_font, "ANY COLOR", 400, 680);
 	}
 		
-
+	
 	// output fps 
 	std::string fpsString = std::to_string(getFPS());
 	m_2dRenderer->drawText(m_font, "FPS: ", 100, 30);
@@ -542,9 +614,18 @@ void PhysicsApp::Pocket(PhysicsObject* other)
 	Circle* ball = dynamic_cast<Circle*>(other);
 	if (ball != nullptr)
 	{
-		ball->KillBall();
+		CueBall* cueBall = dynamic_cast<CueBall*>(other);
+		if (cueBall != nullptr)
+		{
+			m_physicsScene->needsRespawn = true;
+			m_cueBall->SetPosition(glm::vec2(1000));
+			m_cueBall->SetVelocity(glm::vec2(0));
+		}
+		else
+		{
+			ball->KillBall();
+		}
 	}
-		
 }
 
 glm::vec2 PhysicsApp::ScreenToWorld(glm::vec2 screenPos)
